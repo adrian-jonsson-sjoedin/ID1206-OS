@@ -52,7 +52,9 @@ void *thread_function(void *arg) {
         pthread_mutex_unlock(&mutex);
         
         // Small delay for demonstration purposes
-        usleep(100000);
+        // no delay means only one thread is working, delay of 1 mixes things up, delay of 
+        // 100 or more ensures equal distribution
+        usleep(1);
     }
     //Terminates the threads and returns that threads increments value as the exit status
     pthread_exit((void *)(intptr_t)(increments));
