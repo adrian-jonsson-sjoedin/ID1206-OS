@@ -6,7 +6,7 @@
 #include <semaphore.h>
 #include <fcntl.h>
 
-#define MAX 15
+#define MAX 5
 
 // Shared structure
 struct shared_memory {
@@ -52,7 +52,6 @@ int main() {
 
                     // Reading
                     printf("The reader (%d) reads the value %d\n", getpid(), shared->VAR);
-                    if (shared->VAR >= MAX) break;  // Exit condition
 
                     sem_wait(&shared->readLock);
                     shared->readCount--;
