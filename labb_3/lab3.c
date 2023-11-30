@@ -1,6 +1,10 @@
+// run compiled file with the addresses.txt-file, example below
+// "./a.out ./lab3_data/addresses.txt"
+
+// TLB is Translation Look-aside Buffer
+
 #include <stdio.h>
 #include <stdlib.h>
-
 
 #define BUFFER_SIZE 1024
 #define FILE_SIZE 1000
@@ -64,9 +68,10 @@ Reads required bytes from the BACKING_STORE.bin file and returns the appropriate
 emulates the disk storage.
 */
 int readBin(int page_number) {
-    FILE *bin_handle = fopen("./data/BACKING_STORE.bin", "rb");
+    FILE *bin_handle = fopen("./lab3_data/BACKING_STORE.bin", "rb");
     if(bin_handle == NULL) {
         perror("fopen");
+        printf("'BACKING_STORE.bin' could not be found in 'lab3_data'-folder\n");
         exit(EXIT_FAILURE);
     }
     unsigned char buffer[FRAME_SIZE];
@@ -156,6 +161,7 @@ int main(int argc, char *argv[]) {
     FILE *file_handle = fopen(argv[1], "r");
     if(file_handle == NULL) {
         perror("fopen");
+        printf("Make sure 'addresses.txt' is passed along as an argument when running the compiled file.\n");
         exit(EXIT_FAILURE);
     } 
     pm_head = 0;
