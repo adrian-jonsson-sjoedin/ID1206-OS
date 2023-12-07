@@ -1,0 +1,126 @@
+❯ ls -li file1.txt
+     4147633 rw-r--r--   1   adrian   adrian    499 B     Thu Dec  7 17:37:01 2023    file1.txt 
+❯ ln file1.txt file2.txt
+
+Creating a hard link between the two files by running the command above created a new file
+named file2.txt, having the exact same content as file1.txt.
+Running the command `ls -li` again we get:
+❯ ls -li file1.txt
+     4147633 rw-r--r--   2   adrian   adrian    499 B     Thu Dec  7 17:37:01 2023    file1.txt 
+❯ ls -li file2.txt
+     4147633 rw-r--r--   2   adrian   adrian    499 B     Thu Dec  7 17:37:01 2023    file2.txt 
+
+We see that the index (inode) value for both files are identical, as well as the time of creation, even though file2 was
+not created at the same time. They also have the same contents as we can see below:
+❯ cat file1.txt
+Write a program that implements the following disk-scheduling algorithms:%  
+❯ cat file2.txt
+Write a program that implements the following disk-scheduling algorithms:%  
+
+Modifying one file also modifies the other file as we can see:
+❯ echo "Some more text" >> file2.txt
+❯ cat file2.txt
+Write a program that implements the following disk-scheduling algorithms:%
+Some more text
+❯ cat file1.txt
+Write a program that implements the following disk-scheduling algorithms:%
+Some more text
+
+However removing file1.txt with the `rm` command does not remove file2.txt:
+❯ rm file1.txt
+❯ ls
+       a.out        file2.txt        labb4.c        labb4.txt 
+
+Now running the `strace` command when removing file2.txt we see that the system call used for removing file2.txt is 
+`unlinkat`, more specifically it is the line `unlinkat(AT_FDCWD, "file2.txt", 0)      = 0`
+The first parameter specifies the starting directory for the relative path (AT_FDCWD = File Descriptor Current Working Directory)
+so in this case the current working directory, the second parameter is the file to unlink (remove) and the third is for 
+flags, where 0 means standard flags. A successful operation is then indicated by the return value 0.
+❯ strace rm file2.txt
+execve("/usr/bin/rm", ["rm", "file2.txt"], 0x7ffce5109ad8 /* 71 vars */) = 0
+brk(NULL)                               = 0x55cf26d97000
+arch_prctl(0x3001 /* ARCH_??? */, 0x7ffc022588f0) = -1 EINVAL (Invalid argument)
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+newfstatat(3, "", {st_mode=S_IFREG|0644, st_size=82803, ...}, AT_EMPTY_PATH) = 0
+mmap(NULL, 82803, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f5cbeb73000
+close(3)                                = 0
+openat(AT_FDCWD, "/lib64/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\320\226\2\0\0\0\0\0"..., 832) = 832
+pread64(3, "\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784
+pread64(3, "\4\0\0\0@\0\0\0\5\0\0\0GNU\0\2\0\0\300\4\0\0\0\3\0\0\0\0\0\0\0"..., 80, 848) = 80
+pread64(3, "\4\0\0\0\24\0\0\0\3\0\0\0GNU\0\202W\356\220vF\351\260W\31u3\321\344\254\216"..., 68, 928) = 68
+newfstatat(3, "", {st_mode=S_IFREG|0755, st_size=2375624, ...}, AT_EMPTY_PATH) = 0
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f5cbeb71000
+pread64(3, "\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784
+mmap(NULL, 2104720, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f5cbe800000
+mmap(0x7f5cbe828000, 1523712, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x28000) = 0x7f5cbe828000
+mmap(0x7f5cbe99c000, 360448, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x19c000) = 0x7f5cbe99c000
+mmap(0x7f5cbe9f4000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1f3000) = 0x7f5cbe9f4000
+mmap(0x7f5cbe9fa000, 32144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f5cbe9fa000
+close(3)                                = 0
+mmap(NULL, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f5cbeb6e000
+arch_prctl(ARCH_SET_FS, 0x7f5cbeb6e740) = 0
+set_tid_address(0x7f5cbeb6ea10)         = 250569
+set_robust_list(0x7f5cbeb6ea20, 24)     = 0
+rseq(0x7f5cbeb6f0e0, 0x20, 0, 0x53053053) = 0
+mprotect(0x7f5cbe9f4000, 16384, PROT_READ) = 0
+mprotect(0x55cf25150000, 4096, PROT_READ) = 0
+mprotect(0x7f5cbebbd000, 8192, PROT_READ) = 0
+prlimit64(0, RLIMIT_STACK, NULL, {rlim_cur=8192*1024, rlim_max=RLIM64_INFINITY}) = 0
+munmap(0x7f5cbeb73000, 82803)           = 0
+getrandom("\x44\x74\x98\xdb\x9f\x21\x69\xb1", 8, GRND_NONBLOCK) = 8
+brk(NULL)                               = 0x55cf26d97000
+brk(0x55cf26db8000)                     = 0x55cf26db8000
+openat(AT_FDCWD, "/usr/lib/locale/locale-archive", O_RDONLY|O_CLOEXEC) = 3
+newfstatat(3, "", {st_mode=S_IFREG|0644, st_size=224096080, ...}, AT_EMPTY_PATH) = 0
+mmap(NULL, 224096080, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f5cb1200000
+close(3)                                = 0
+ioctl(0, TCGETS, {c_iflag=BRKINT|ICRNL|IXON|IXANY|IMAXBEL|IUTF8, c_oflag=NL0|CR0|TAB0|BS0|VT0|FF0|OPOST|ONLCR, c_cflag=B38400|CS8|CREAD|HUPCL, c_lflag=ISIG|ICANON|ECHO|ECHOE|ECHOK|IEXTEN|ECHOCTL|ECHOKE, ...}) = 0
+newfstatat(AT_FDCWD, "file2.txt", {st_mode=S_IFREG|0644, st_size=90, ...}, AT_SYMLINK_NOFOLLOW) = 0
+geteuid()                               = 1000
+newfstatat(AT_FDCWD, "file2.txt", {st_mode=S_IFREG|0644, st_size=90, ...}, AT_SYMLINK_NOFOLLOW) = 0
+faccessat2(AT_FDCWD, "file2.txt", W_OK, AT_EACCESS) = 0
+unlinkat(AT_FDCWD, "file2.txt", 0)      = 0
+lseek(0, 0, SEEK_CUR)                   = -1 ESPIPE (Illegal seek)
+close(0)                                = 0
+close(1)                                = 0
+close(2)                                = 0
+exit_group(0)                           = ?
++++ exited with 0 +++
+
+There was no source code available with this lab so I manually created file3.txt with `touch` and put some text in it with
+`echo`.
+We see here that the index number is different between the two, as well as the time of creation. Furthermore we also see
+that file4.txt is linked to file3.txt, and that read, write execute permission is set for all on file4, while file3 only 
+have read and write set for all.
+❯ ls -li file3.txt file4.txt
+     4148302 rw-r--r--   1   adrian   adrian     67 B     Thu Dec  7 18:07:56 2023    file3.txt 
+     4148317 rwxrwxrwx   1   adrian   adrian      9 B     Thu Dec  7 18:08:26 2023    file4.txt  ⇒ file3.txt
+
+Editing the contents of file4 however still changes the content in file3:
+❯ echo "Text inserted into file4" >> file4.txt
+❯ cat file3.txt
+This is just some text that I put into file3 with the echo command
+Text inserted into file4
+
+Listing the files again before we remove file3 we see that the time of last edit is still the same as when it was created
+for file4 but file3 have been updated. This is because file4 is just a link to file3 so editing file4 is the same as directly 
+editing file3, while file4 is just acting as a reflection of file3. Thus when we remove file3 with the `rm` command file4 
+will most likely still be there but no longer accessible.
+❯ rm file3.txt
+❯ ls -li file4.txt
+     4148317 rwxrwxrwx   1   adrian   adrian      9 B     Thu Dec  7 18:08:26 2023    file4.txt  ⇒ file3.txt [Dead link]
+❯ cat file4.txt
+cat: file4.txt: No such file or directory
+
+As we can see it is as suspected. file4.txt is still there but now as a dead link and no longer accessible.
+However if I edit file4 and put some new text in it the link will start working again. What the system does is create a 
+new file3.txt and put the text I added to file4.txt in the newly created file3.txt. This however is a new file and the 
+previous text is gone from both files. Note however that I need to edit the file from the terminal with `echo` since the 
+file4.txt could no longer be opened or read.
+❯ echo "Test" >> file4.txt
+❯ cat file4.txt
+❯ ls -li file3.txt file4.txt
+     4148460 rw-r--r--   1   adrian   adrian      5 B     Thu Dec  7 18:22:04 2023    file3.txt 
+     4148317 rwxrwxrwx   1   adrian   adrian      9 B     Thu Dec  7 18:08:26 2023    file4.txt  ⇒ file3.txt
